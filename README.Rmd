@@ -6,7 +6,7 @@ output: github_document
 knitr::opts_chunk$set(message = F, warning = F )
 ```
 
-# Bad hockey analytics
+# Answering the wrong question in hockey analytics really, really well
 
 I joined a hockey playoff pool and thought I'd share my hasty-and-it-shows analysis to pick my roster.  I don't know anything about hockey, but I wanted to do better this year than the last one.   There might be something technique-wise that you can get out of reading this and I'll hopefully learn where I could have made better predictions.
 
@@ -325,7 +325,7 @@ nhl_2019 %>%
 
 Seems reasonable to me that most players aged one year and a handful aged two or three.  One player's returning after seven years.  Out of curiosity, I'll look up who it is: `r nhl_2019 %>% filter( age - age_old == 7) %>% pull(player)`.  Good news for my data handling, his Hockey Reference [profile](https://www.hockey-reference.com/players/s/staaljo01.html#stats_basic_plus_nhl_po::none) confirms his last playoffs was 2011-12 when he was with Pittsburgh.  
 
-Lets add predictions to this year's roster.  I'm not likely to get the top 12 players on my list knowing the vagaries of drafting, but here's the top 20 to account for it a little.
+We're ready to add predictions to this year's roster.  I'm not likely to get the top 12 players on my list knowing the vagaries of drafting, so here's the top 20 I went into the draft with.
 
 ```{r}
 result <- nhl_2019 %>%

@@ -1,43 +1,30 @@
 
-# Bad hockey analytics
+Answering the wrong question in hockey analytics really, really well
+====================================================================
 
-I joined a hockey playoff pool and thought I’d share my
-hasty-and-it-shows analysis to pick my roster. I don’t know anything
-about hockey, but I wanted to do better this year than the last one.
-There might be something technique-wise that you can get out of reading
-this and I’ll hopefully learn where I could have made better
-predictions.
+I joined a hockey playoff pool and thought I'd share my hasty-and-it-shows analysis to pick my roster. I don't know anything about hockey, but I wanted to do better this year than the last one. There might be something technique-wise that you can get out of reading this and I'll hopefully learn where I could have made better predictions.
 
-## The Brief
+The Brief
+---------
 
-Select a roster of 12 players who will score the highest on this formula
-in the 2019 NHL playoffs:
+Select a roster of 12 players who will score the highest on this formula in the 2019 NHL playoffs:
 
-`Player’s points = goals + assists + game winning goals + blocked
-shots/10 + hits/15`
+`Player’s points = goals + assists + game winning goals + blocked shots/10 + hits/15`
 
-Here’s a few tips as well from the fantasy hockey veterans in my pool:
+Here's a few tips as well from the fantasy hockey veterans in my pool:
 
-  - have good players on the team that wins the cup
-  - top lines play more than 3rd or 4th lines, especially if they don’t
-    play the power play
-  - don’t draft a goalie
+-   have good players on the team that wins the cup
+-   top lines play more than 3rd or 4th lines, especially if they don't play the power play
+-   don't draft a goalie
 
-Noted\!
+Noted!
 
-Not having any theories about what to look for I thought I’d look to the
-data for inspiration. We were sent a link to a hockey stats
-[website](https://www.hockey-reference.com/playoffs/) that looked pretty
-good. There’s many years of data on the players themselves and that’s
-where I can find the variables that end up directly in our pool’s
-scoring equation.
+Not having any theories about what to look for I thought I'd look to the data for inspiration. We were sent a link to a hockey stats [website](https://www.hockey-reference.com/playoffs/) that looked pretty good. There's many years of data on the players themselves and that's where I can find the variables that end up directly in our pool's scoring equation.
 
-## Getting data
+Getting data
+------------
 
-I think most people would reach for python when looking to grab some
-data off the web, but the **rvest** package proved more than capable
-here. I’ll just skate over the details of web scraping, but suffice to
-say this data was pretty clean to begin with - always a plus\!
+I think most people would reach for python when looking to grab some data off the web, but the **rvest** package proved more than capable here. I'll just skate over the details of web scraping, but suffice to say this data was pretty clean to begin with - always a plus!
 
 ``` r
 library(rvest)
@@ -85,9 +72,7 @@ if (fs::file_exists(here("data/nhl_stats.rds"))) {
 }
 ```
 
-That code nets us eight years of basic player stats (I made the column
-names nicer behind the scenes too). A quick count of players in a year
-is a good idea to check for any obvious omissions.
+That code nets us eight years of basic player stats (I made the column names nicer behind the scenes too). A quick count of players in a year is a good idea to check for any obvious omissions.
 
 ``` r
 nhl %>% 
@@ -108,13 +93,9 @@ nhl %>%
 
 Looks good, no sudden spikes or drops.
 
-Alright, we know this is a maximization problem: there’s a formula and
-we want to give it the inputs that’ll give us the highest output. Lets
-calculate the score each of these players got at the end of each
-playoffs according to our pool’s formula.
+Alright, we know this is a maximization problem: there's a formula and we want to give it the inputs that'll give us the highest output. Lets calculate the score each of these players got at the end of each playoffs according to our pool's formula.
 
-A peek at the rest of this data begins my
-    orientation.
+A peek at the rest of this data begins my orientation.
 
 ``` r
 str(nhl)
@@ -150,9 +131,7 @@ str(nhl)
     ##  $ faceoff_win_pct_at_even_strength: chr  "55.8" "52.2" "" "" ...
     ##  $ playoff_year                    : int  2011 2011 2011 2011 2011 2011 2011 2011 2011 2011 ...
 
-I can see the columns I need were brought in as a bunch of text values,
-but we need numeric values for calculations. I use the very handy
-`mutate_at` function to do this en masse and then do the calculation.
+I can see the columns I need were brought in as a bunch of text values, but we need numeric values for calculations. I use the very handy `mutate_at` function to do this en masse and then do the calculation.
 
 ``` r
 # change all col types to numeric except when we don't
@@ -169,11 +148,10 @@ nhl <- nhl %>%
   )
 ```
 
-## Exploring the data
+Exploring the data
+------------------
 
-Now we can look at how much this score varies between playoffs - I was
-taught long ago that without varying values there’s nothing to model.
-I’ll plot it and see if different players get different scores.
+Now we can look at how much this score varies between playoffs - I was taught long ago that without varying values there's nothing to model. I'll plot it and see if different players get different scores.
 
 ``` r
 nhl %>% 
@@ -185,17 +163,11 @@ nhl %>%
         y = "number of players")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
-There’s a nice spread of points each year and most players won’t get
-more than 10 points. 30 points is exceptional. We want to find anything
-about a player that might be predictive of their score, but will also be
-something that we’ll know about the player at the start of the 2019
-playoffs.
+There's a nice spread of points each year and most players won't get more than 10 points. 30 points is exceptional. We want to find anything about a player that might be predictive of their score, but will also be something that we'll know about the player at the start of the 2019 playoffs.
 
-Some players will have had more playoffs experience than others so that
-seems like a good place to start. I’ll count how many playoffs each
-player was in starting from 2011 (where my data begins).
+Some players will have had more playoffs experience than others so that seems like a good place to start. I'll count how many playoffs each player was in starting from 2011 (where my data begins).
 
 ``` r
 # add number of past playoffs each player's been in 
@@ -218,16 +190,11 @@ avg_points %>%
        y = "points")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
-Looking at the average points per playoffs across all players,
-experience in terms of previous playoffs looks linearly associated to
-points, with some substantial variability. This may be because players
-with seven years of playoffs from 2011 to 2018 are much rarer than
-rookie players overall.
+Looking at the average points per playoffs across all players, experience in terms of previous playoffs looks linearly associated to points, with some substantial variability. This may be because players with seven years of playoffs from 2011 to 2018 are much rarer than rookie players overall.
 
-We can try and regress points on past playoffs to see how well our
-predictions fit.
+We can try and regress points on past playoffs to see how well our predictions fit.
 
 ``` r
 # fit model
@@ -246,11 +213,9 @@ avg_points %>%
        y = "points")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
-The model’s alright at lower value of experience, but gets worse into
-the higher ones. We can see if there’s any pattern to our errors by
-checking the residuals of our model.
+The model's alright at lower value of experience, but gets worse into the higher ones. We can see if there's any pattern to our errors by checking the residuals of our model.
 
 ``` r
 avg_points <- avg_points %>% 
@@ -262,14 +227,9 @@ avg_points %>%
   labs(title = "Residuals of model 1: playoff experience")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
-It looks pretty randomly spread around 0 until five past playoffs or
-more where we see a consistent over estimation. I’ll leave this be for
-now for time’s sake as I’m curious about a related variable: is there
-any association between a player’s age and points? I realize age is
-probably correlated with past playoff experience, but I’ll ignore that
-here.
+It looks pretty randomly spread around 0 until five past playoffs or more where we see a consistent over estimation. I'll leave this be for now for time's sake as I'm curious about a related variable: is there any association between a player's age and points? I realize age is probably correlated with past playoff experience, but I'll ignore that here.
 
 ``` r
 # bin age so it's easier to summarise it
@@ -291,12 +251,9 @@ points_by_age %>%
         y = "Points")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
-There’s a sort off peak in someone’s career where their play is
-generating the most points. We could get at this with the curve of a
-quadratic equation so let’s try adding that to the
-model.
+There's a sort off peak in someone's career where their play is generating the most points. We could get at this with the curve of a quadratic equation so let's try adding that to the model.
 
 ``` r
 mod_player2 <- lm( pool_pts ~ past_playoffs + age + I(age^2), data = nhl )
@@ -315,10 +272,9 @@ grid %>%
         y = "predicted points")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
-This plot just uses the median value of our new predictor age for
-plotting: 27. We can get at more detail by looking at the residuals.
+This plot just uses the median value of our new predictor age for plotting: 27. We can get at more detail by looking at the residuals.
 
 ``` r
 avg_age <- nhl %>% 
@@ -333,20 +289,16 @@ avg_points %>%
   labs(title = "Residuals of model 2: playoff experience + age + age squared")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
-Nothing’s changed from our previous plot really. We still have trouble
-predicting points for the more experienced players, controlling for age.
+Nothing's changed from our previous plot really. We still have trouble predicting points for the more experienced players, controlling for age.
 
-Unfortunately, I’d used up all my time before I got to try looking at
-line shifts like we were encourage to. Next time\! I’ll move on to
-making predictions using the model I have.
+Unfortunately, I'd used up all my time before I got to try looking at line shifts like we were encourage to. Next time! I'll move on to making predictions using the model I have.
 
-## Making predictions
+Making predictions
+------------------
 
-To make predictions, we’ll need a roster of this year’s players that has
-at the minimum their age and name (so we can look them up and see if
-they’ve played in past playoffs).
+To make predictions, we'll need a roster of this year's players that has at the minimum their age and name (so we can look them up and see if they've played in past playoffs).
 
 ``` r
 # get latest row from each player of historical data
@@ -377,8 +329,7 @@ nhl_2019 <- nhl_2019 %>%
           past_playoffs = replace_na(past_playoffs, 0) ) 
 ```
 
-For a quick check, I just calculated how much any players we’ve seen
-before have aged.
+For a quick check, I just calculated how much any players we've seen before have aged.
 
 ``` r
 nhl_2019 %>% 
@@ -390,25 +341,18 @@ nhl_2019 %>%
     ## # A tibble: 8 x 2
     ##    aged     n
     ##   <dbl> <int>
-    ## 1     1   186
-    ## 2     2    35
-    ## 3     3    25
-    ## 4     4     4
-    ## 5     5     3
-    ## 6     6     1
-    ## 7     7     1
-    ## 8    NA    52
+    ## 1  1.00   186
+    ## 2  2.00    35
+    ## 3  3.00    25
+    ## 4  4.00     4
+    ## 5  5.00     3
+    ## 6  6.00     1
+    ## 7  7.00     1
+    ## 8 NA       52
 
-Seems reasonable to me that most players aged one year and a handful
-aged two or three. One player’s returning after seven years. Out of
-curiosity, I’ll look up who it is: Jordan Staal. Good news for my data
-handling, his Hockey Reference
-[profile](https://www.hockey-reference.com/players/s/staaljo01.html#stats_basic_plus_nhl_po::none)
-confirms his last playoffs was 2011-12 when he was with Pittsburgh.
+Seems reasonable to me that most players aged one year and a handful aged two or three. One player's returning after seven years. Out of curiosity, I'll look up who it is: Jordan Staal. Good news for my data handling, his Hockey Reference [profile](https://www.hockey-reference.com/players/s/staaljo01.html#stats_basic_plus_nhl_po::none) confirms his last playoffs was 2011-12 when he was with Pittsburgh.
 
-Lets add predictions to this year’s roster. I’m not likely to get the
-top 12 players on my list knowing the vagaries of drafting, but here’s
-the top 20 to account for it a little.
+We're ready to add predictions to this year's roster. I'm not likely to get the top 12 players on my list knowing the vagaries of drafting, so here's the top 20 I went into the draft with.
 
 ``` r
 result <- nhl_2019 %>%
@@ -427,26 +371,25 @@ result %>%
     ## # A tibble: 20 x 7
     ##    player              team  pos     age age_old past_playoffs pool_pts
     ##    <chr>               <chr> <chr> <dbl>   <dbl>         <dbl>    <dbl>
-    ##  1 Ryan McDonagh       TBL   D        29      28             8    11.1 
-    ##  2 James Neal          CGY   LW       31      30             8    10.8 
-    ##  3 Matt Niskanen       WSH   D        32      31             8    10.7 
-    ##  4 Marcus Johansson    BOS   C        28      27             7    10.4 
-    ##  5 Brian Boyle         NSH   C        34      33             8    10.3 
-    ##  6 Dan Girardi         TBL   D        34      33             8    10.3 
-    ##  7 John Carlson        WSH   D        29      28             7    10.3 
-    ##  8 Logan Couture       SJS   C        29      28             7    10.3 
-    ##  9 Nick Bonino         NSH   C        30      29             7    10.2 
-    ## 10 Carl Hagelin        WSH   LW       30      29             7    10.2 
-    ## 11 Nicklas Backstrom   WSH   C        31      30             7    10.1 
-    ## 12 Justin Braun        SJS   D        31      30             7    10.1 
-    ## 13 Sidney Crosby       PIT   C        31      30             7    10.1 
-    ## 14 Marc-Edouard Vlasic SJS   D        31      30             7    10.1 
-    ## 15 Evgeni Malkin       PIT   C        32      31             7     9.93
-    ## 16 T.J. Oshie          WSH   C        32      31             7     9.93
-    ## 17 Ryan Reaves         VEG   RW       32      31             7     9.93
-    ## 18 Alex Ovechkin       WSH   LW       33      32             7     9.75
-    ## 19 Charlie Coyle       BOS   C        26      25             6     9.66
-    ## 20 Nick Leddy          NYI   D        27      24             6     9.65
+    ##  1 Ryan McDonagh       TBL   D      29.0    28.0          8.00    11.1 
+    ##  2 James Neal          CGY   LW     31.0    30.0          8.00    10.8 
+    ##  3 Matt Niskanen       WSH   D      32.0    31.0          8.00    10.7 
+    ##  4 Marcus Johansson    BOS   C      28.0    27.0          7.00    10.4 
+    ##  5 Brian Boyle         NSH   C      34.0    33.0          8.00    10.3 
+    ##  6 Dan Girardi         TBL   D      34.0    33.0          8.00    10.3 
+    ##  7 John Carlson        WSH   D      29.0    28.0          7.00    10.3 
+    ##  8 Logan Couture       SJS   C      29.0    28.0          7.00    10.3 
+    ##  9 Nick Bonino         NSH   C      30.0    29.0          7.00    10.2 
+    ## 10 Carl Hagelin        WSH   LW     30.0    29.0          7.00    10.2 
+    ## 11 Nicklas Backstrom   WSH   C      31.0    30.0          7.00    10.1 
+    ## 12 Justin Braun        SJS   D      31.0    30.0          7.00    10.1 
+    ## 13 Sidney Crosby       PIT   C      31.0    30.0          7.00    10.1 
+    ## 14 Marc-Edouard Vlasic SJS   D      31.0    30.0          7.00    10.1 
+    ## 15 Evgeni Malkin       PIT   C      32.0    31.0          7.00     9.93
+    ## 16 T.J. Oshie          WSH   C      32.0    31.0          7.00     9.93
+    ## 17 Ryan Reaves         VEG   RW     32.0    31.0          7.00     9.93
+    ## 18 Alex Ovechkin       WSH   LW     33.0    32.0          7.00     9.75
+    ## 19 Charlie Coyle       BOS   C      26.0    25.0          6.00     9.66
+    ## 20 Nick Leddy          NYI   D      27.0    24.0          6.00     9.65
 
-*Postscript: Yup, several of my top picks were defenceman. Imagine the
-look on people’s faces.*
+*Postscript: Yup, several of my top picks were defenceman. Imagine the look on people's faces.*
