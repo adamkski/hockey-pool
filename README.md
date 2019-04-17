@@ -194,7 +194,8 @@ something that we’ll know about the player at the start of the 2019
 playoffs.
 
 Some players will have had more playoffs experience than others so that
-seems like a good place to start.
+seems like a good place to start. I’ll count how many playoffs each
+player was in starting from 2011 (where my data begins).
 
 ``` r
 # add number of past playoffs each player's been in 
@@ -222,8 +223,8 @@ avg_points %>%
 Looking at the average points per playoffs across all players,
 experience in terms of previous playoffs looks linearly associated to
 points, with some substantial variability. This may be because players
-with seven years of playoffs in 2018 are much rarer than rookie players
-overall.
+with seven years of playoffs from 2011 to 2018 are much rarer than
+rookie players overall.
 
 We can try and regress points on past playoffs to see how well our
 predictions fit.
