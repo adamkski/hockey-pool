@@ -182,7 +182,7 @@ avg_points <- nhl %>%
 avg_points %>% 
   ggplot( aes( past_playoffs, pool_pts )) +
   geom_point() +
-  labs(title = "Average points per playoff year across all players",
+  labs(title = "Average player's points per playoff year",
        subtitle = "By years of playoff experience",
        x = "number of past playoffs played",
        y = "points")
@@ -205,7 +205,6 @@ avg_points %>%
   geom_point() +
   geom_line(data = grid, color = "red", size = 1) +
   labs(title = "Fitting model 1: playoff experience",
-       subtitle = "By years of playoff experience",
        x = "number of past playoffs played",
        y = "points")
 ```
@@ -238,7 +237,8 @@ points_by_age <- nhl %>%
 points_by_age %>% 
   ggplot( aes(age_bin, pool_pts) ) +
   geom_point() +
-  labs( title = "Average points across players by age for playoffs 2011-2018",
+  labs(title = "Average player's points per playoff year",
+       subtitle = "By age",
         x = "Age of player",
         y = "Points")
 ```
