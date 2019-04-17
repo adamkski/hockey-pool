@@ -398,11 +398,10 @@ nhl_2019 %>%
 
 Seems reasonable to me that most players aged one year and a handful
 aged two or three. One player’s returning after seven years. Out of
-curiosity, I’ll look up the player’s name: Jordan Staal. Good news for
-me in terms avoiding error, his Hockey Reference
+curiosity, I’ll look up who it is: Jordan Staal. Good news for my data
+handling, his Hockey Reference
 [profile](https://www.hockey-reference.com/players/s/staaljo01.html#stats_basic_plus_nhl_po::none)
-confirms his last time in a playoff was 2011-12 when he was with
-Pittsburgh.
+confirms his last playoffs was 2011-12 when he was with Pittsburgh.
 
 Lets add predictions to this year’s roster. I’m not likely to get the
 top 12 players on my list knowing the vagaries of drafting, but here’s
