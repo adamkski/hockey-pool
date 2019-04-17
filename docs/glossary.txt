@@ -1,0 +1,34 @@
+Rk -- Rank
+Ice Time
+GP -- Games Played
+Scoring
+G -- Goals
+A -- Assists
+PTS -- Points
+Plus/Minus
++/- -- Plus/Minus
+Scoring
+PIM -- Penalties in Minutes
+Goals
+EV -- Even Strength Goals
+PP -- Power Play Goals
+SH -- Short-Handed Goals
+GW -- Game-Winning Goals
+Assists
+EV -- Even Strength Assists
+PP -- Power Play Assists
+SH -- Short-Handed Assists
+Shots on Goal
+S -- Shots on Goal
+S% -- Shooting Percentage
+Ice Time
+TOI -- Time on Ice (in minutes)
+ATOI -- Average Time on Ice
+Blocks
+BLK -- Blocks at Even Strength
+HIT -- Hits at Even Strength
+Faceoff Wins
+FOW -- Faceoff Wins at Even Strength
+Faceoff Losses
+FOL -- Faceoff Losses at Even Strength
+FO% -- Faceoff Win Percentage at Even Strength
