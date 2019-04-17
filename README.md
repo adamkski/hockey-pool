@@ -253,7 +253,7 @@ points_by_age %>%
 
 ![](README_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
-There's a sort off peak in someone's career where their play is generating the most points. We could get at this with the curve of a quadratic equation so let's try adding that to the model.
+There's a sort of peak in someone's career where their play is generating the most points. We could get at this with the curve of a quadratic equation so let's try adding that to the model.
 
 ``` r
 mod_player2 <- lm( pool_pts ~ past_playoffs + age + I(age^2), data = nhl )
