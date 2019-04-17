@@ -37,3 +37,6 @@ rsconnect/
 
 # Data and results
 .Rproj.user
+
+# RMarkdown cache
+*_files/
