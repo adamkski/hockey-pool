@@ -336,8 +336,10 @@ avg_points %>%
 
 Nothing’s changed from our previous plot really. We still have trouble
 predicting points for the more experienced players, controlling for age.
-That’s about all the time I planned to spend on this so I’ll move on to
-making predictions with the model I have.
+
+Unfortunately, I’d used up all my time before I got to try looking at
+line shifts like we were encourage to. Next time\! I’ll move on to
+making predictions using the model I have.
 
 ## Making predictions
 
