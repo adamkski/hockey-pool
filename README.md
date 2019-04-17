@@ -160,7 +160,7 @@ but we need numeric values for calculations. I use the very handy
 nhl <- nhl %>% 
   mutate_at(
     vars( everything(), -player, -team, -pos, -ice_time_avg ), 
-    funs( replace_na( as.numeric(.), 0))
+    funs( . %>% as.numeric %>% replace_na(0) )
     ) 
 
 nhl <- nhl %>% 
@@ -185,7 +185,7 @@ nhl %>%
         y = "number of players")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 There’s a nice spread of points each year and most players won’t get
 more than 10 points. 30 points is exceptional. We want to find anything
@@ -217,7 +217,7 @@ avg_points %>%
        y = "points")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Looking at the average points per playoffs across all players,
 experience in terms of previous playoffs looks linearly associated to
@@ -246,7 +246,7 @@ avg_points %>%
        y = "points")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 The model’s alright at lower value of experience, but gets worse into
 the higher ones. We can see if there’s any pattern to our errors by
@@ -262,7 +262,7 @@ avg_points %>%
   labs(title = "Residuals of model 1: playoff experience")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 It looks pretty randomly spread around 0 until five past playoffs or
 more where we see a consistent over estimation. I’ll leave this be for
@@ -290,7 +290,7 @@ points_by_age %>%
         y = "Points")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 There’s a sort off peak in someone’s career where their play is
 generating the most points. We could get at this with the curve of a
@@ -314,7 +314,7 @@ grid %>%
         y = "predicted points")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 This plot just uses the median value of our new predictor age for
 plotting: 27. We can get at more detail by looking at the residuals.
@@ -332,7 +332,7 @@ avg_points %>%
   labs(title = "Residuals of model 2: playoff experience + age + age squared")
 ```
 
-![](bad-hockey-analytics_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Nothing’s changed from our previous plot really. We still have trouble
 predicting points for the more experienced players, controlling for age.

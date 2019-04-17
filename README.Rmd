@@ -139,7 +139,7 @@ I can see the columns I need were brought in as a bunch of text values, but we n
 nhl <- nhl %>% 
   mutate_at(
     vars( everything(), -player, -team, -pos, -ice_time_avg ), 
-    funs( replace_na( as.numeric(.), 0))
+    funs( . %>% as.numeric %>% replace_na(0) )
     ) 
 
 nhl <- nhl %>% 
