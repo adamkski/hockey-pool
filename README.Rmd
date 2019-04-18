@@ -75,8 +75,6 @@ if (fs::file_exists(here("data/nhl_stats.rds"))) {
     bind_rows()
   nhl %>% write_rds(here("data/nhl_stats.rds"))
 }
-
-
 ```
 
 

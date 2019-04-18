@@ -1,0 +1,248 @@
+---
+output: github_document
+---
+
+Is there any sense in using empirical bayes to find a "goaling average" or something akin to the batting average of sabermetrics?
+
+```{r}
+library(stats4)
+library(rvest)
+library(tidyverse)
+library(here)
+
+# lets get more data this time, shots on goal begin being recorded in 1960
+years <- 1960:2018
+
+load_player_data <- function(yr) {
+  print( paste0("Scraping ", yr) )
+  html <- read_html(paste0("https://www.hockey-reference.com/playoffs/NHL_", yr, "_skaters.html"))
+  html
+
+  # the table I want has the id 'stats' so I can pull it in swiftly
+  stats <- html %>% 
+    html_node('#stats') %>% 
+    html_table() 
+  
+  # fix col names
+  names(stats) <- unlist(stats[1,])
+  
+  # remove rows that just repeat the header
+  result <- stats %>% 
+    set_tidy_names() %>% 
+    filter( Rk != "Rk" ) %>% 
+    as_tibble() %>% 
+    mutate( playoff_year = yr )
+  
+  # be nice to your host 
+  Sys.sleep(2)
+  
+  result
+  
+}
+
+.dl_nhl <- possibly(load_player_data, otherwise = NULL)
+
+dl_nhl <- memoise::memoise(.dl_nhl)
+
+nhl <- map( years, dl_nhl ) %>% 
+  bind_rows()
+
+nhl %>% write_rds(here("data/nhl_stats_1960-2018.rds"))
+```
+
+```{r}
+nhl <- read_rds(here("data/nhl_stats_1960-2018.rds"))
+
+nhl <- nhl %>% 
+  rename(
+    rank = Rk,
+    player = Player,
+    age = Age,
+    team = Tm,
+    pos = Pos,
+    games_played = GP,
+    goals = G,      
+    assists = A,      
+    points = PTS,    
+    plus_minus = `+/-`,
+    penalties_in_minutes = PIM,
+    even_strength_goals = EV..12, 
+    power_play_goals = PP..13, 
+    short_handed_goals = SH..14, 
+    game_winning_goals = GW,     
+    even_strength_assists = EV..16, 
+    power_play_assists = PP..17, 
+    short_handed_assists = SH..18, 
+    shots_on_goal = S,      
+    shooting_percentage = `S%`,     
+    ice_time_minutes = TOI,    
+    ice_time_avg = ATOI,  
+    blocks_at_even_strength = BLK,    
+    hits_at_even_strength = HIT,    
+    faceoff_wins_at_even_strength = FOW,    
+    faceoff_losses_at_even_strength = FOL,    
+    faceoff_win_pct_at_even_strength = `FO%`    
+  )
+
+nhl <- nhl %>% 
+  mutate_at(
+    vars( everything(), -player, -team, -pos, -ice_time_avg ), 
+    funs( . %>% as.numeric %>% replace_na(0) )
+    ) 
+
+nhl <- nhl %>% 
+  mutate(
+    pool_pts = goals + assists + game_winning_goals + blocks_at_even_strength / 10 + hits_at_even_strength / 15 
+  )
+
+```
+
+```{r}
+# filter out positions without scoring
+nhl %>% 
+  group_by(pos) %>% 
+  summarise(mean = mean(goals),
+            median = median(goals),
+            min = min(goals),
+            max = max(goals))
+nhl %>% 
+  group_by(pos) %>% 
+  summarise(mean = mean(shots_on_goal),
+            median = median(shots_on_goal),
+            min = min(shots_on_goal),
+            max = max(shots_on_goal))
+
+nhl <- nhl %>% 
+  filter( pos %in% c("C","D","LW","RW"))
+
+career <- nhl %>% 
+  group_by(player) %>% 
+  summarise( 
+    goals = sum(goals, na.rm = T),
+    shots_on_goal = sum(shots_on_goal, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate( avg = goals / shots_on_goal  )
+```
+
+Let's do the same naive look at whose the best scorer?
+
+```{r}
+career %>% 
+  arrange(desc(avg)) %>% 
+  head
+```
+
+OK, so we're in the same point here where we want to think about a better way to tell what a player's true goaling average is.
+
+```{r}
+# what's the distribution of shots on goal?
+summary(career$shots_on_goal)
+
+# does it vary over time?
+
+nhl %>% 
+  mutate( decade = (playoff_year %/% 10)*10 ) %>% 
+  group_by(decade, player) %>% 
+  summarise( 
+    goals = sum(goals, na.rm = T),
+    shots_on_goal = sum(shots_on_goal, na.rm = T)) %>% 
+  ungroup() %>% 
+  filter( shots_on_goal > 100 ) %>% 
+  mutate( avg = goals / shots_on_goal  ) %>% 
+  ggplot(aes(decade, avg, group = decade)) +
+  geom_boxplot()
+
+# filter out lower numbers
+career_filtered <- career %>% 
+  filter( shots_on_goal > 100 )
+
+career_filtered %>% 
+  ggplot(aes(goals)) +
+  geom_histogram()
+```
+
+It looks like we could estimate this with a beta distribution.  There's only one peak. 
+
+Step 1 Lets estimate the prior from this data and see how good a fit we get.
+
+```{r}
+# log-likelihood function
+ll <- function(alpha, beta) {
+  x <- career_filtered$goals
+  total <- career_filtered$shots_on_goal
+  -sum(VGAM::dbetabinom.ab(x, total, alpha, beta, log = TRUE))
+}
+
+# maximum likelihood estimation
+m <- mle(ll, start = list(alpha = 1, beta = 10), method = "L-BFGS-B",
+         lower = c(0.0001, .1))
+
+ab <- coef(m)
+alpha0 <- ab[1]
+beta0 <- ab[2]
+
+# plot
+dens <- function(x) {dbeta(x, alpha0, beta0)}
+career_filtered %>% 
+  ggplot(aes(avg)) +
+  geom_histogram(aes(y=..density..)) +
+  stat_function(fun = dens, colour = "orange", size = 2)
+```
+
+It's really overshooting it on the peak and misses some of the spread, but it's otherwise got some resemblance.  It even captures the long tail.
+
+Step 2 use this as a our prior and update using our original data.
+
+```{r}
+career_eb <- career %>% 
+  mutate( eb_estimate = (alpha0 + goals) / (alpha0 + beta0 + shots_on_goal) )
+```
+
+Now, whose the best scorer in NHL?
+
+```{r}
+career_eb %>% 
+  arrange(desc(eb_estimate)) %>% 
+  head(20)
+```
+
+And how well does this line up with the current point leaders?
+
+```{r}
+leaders <- tribble(
+  ~player,
+  "Mark Stone",
+  "Max Pacioretty",
+  "Paul Stastny",
+  "Mikko Rantanen",
+  "Brad Marchand",
+  "Nathan MacKinnon",
+  "Shea Theodore",
+  "Alex Pietrangelo",
+  "Kyle Connor",
+  "Blake Wheeler"
+)
+
+career_eb %>% 
+  arrange(desc(eb_estimate)) %>% 
+  mutate( rank = row_number()) %>% 
+  semi_join(leaders)
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
